@@ -1,0 +1,5 @@
+subject trial unshuffledTrial goStop goNum threat img hand SSD DELTA gotResponse correctResp resp rt
+99 1 84 go 1 no img2 1 0.000000 0.000000 1 1 yes 876
+99 2 104 go 1 no img2 1 0.000000 0.000000 1 1 yes 408
+99 3 125 go 1 yes img1 1 0.000000 0.000000 1 1 no 391
+99 4 113 go 1 yes img1 1 0.000000 0.000000 1 1 yes 357
