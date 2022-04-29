@@ -91,6 +91,8 @@ save_rds_raw_prl_data <- function(DESTINATION_FOLDER) {
       choice,
       rt
     )
+    
+    print(i)
   }
   
   
@@ -105,22 +107,19 @@ save_rds_raw_prl_data <- function(DESTINATION_FOLDER) {
   
   # save data in RDS files
   saveRDS(df, here("data", "processed", "PRL", name_file))
-  
 }
-
-
-
 
 
 # Prelims
 library("here")
-source(here("scripts", "PRL", "01_prelims.R"))
-source(here("libraries", "func_eating.R"))
+# source(here("scripts", "PRL", "01_prelims.R"))
+# source(here("libraries", "func_eating.R"))
 
 
 # DESTINATION_FOLDER <- "GRP_ABI_SP_T0"
 # DESTINATION_FOLDER <- "GRP_ABI_SP_T1"
 # DESTINATION_FOLDER <- "GRP_ABI_SP_T2"
+
 # DESTINATION_FOLDER <- "GRP_ABI_CO_T0"
 DESTINATION_FOLDER <- "GRP_ABI_CO_T2"
 

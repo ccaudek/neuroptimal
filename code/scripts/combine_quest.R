@@ -23,8 +23,6 @@ dim(abicot0)
 names(abicot0)
 
 
-
-
 abicot2 <- rio::import(
   here(
     "data", "raw", "quest", "excel", "ABI_CO_T2.xlsx"
@@ -153,6 +151,115 @@ thedat <- rbind(
 )
 thedat$group <- factor(thedat$group)
 thedat$condition <- factor(thedat$condition)
+
+
+
+
+
+
+# Read hddmrl params
+params <- rio::import(
+  here("data", "processed", "prl", "hddm", "hddm_params.txt")
+)
+
+# get the first two characters from params_prl_ddm:
+params$param <- substr(params$ii, start = 1, stop = 2)
+# unique(params$param)
+
+# get integers
+params$id_param_string <- gsub(".*\\).", "", params$ii) 
+# params_prl_ddm$id_param_string <- stringr::str_remove(params_prl_ddm$ii, "[).]")
+params$subj_idx <- as.integer(readr::parse_number(params$id_param_string))
+# unique(params$subj_idx)
+
+params$p <- params$param %>% 
+  dplyr::recode(
+    "a_" = "a",
+    "al" = "alpha_neg",
+    "po" = "alpha_pos",
+    "t_" = "t",
+    "v_" = "v",
+    "z_" = "z"
+  )
+# summary(factor(params$p))
+
+params_clean <- params %>% 
+  dplyr::select(
+    subj_idx, p, mean
+  ) %>% 
+  dplyr::rename(
+    value = mean
+  ) %>% 
+  group_by(subj_idx, p) %>% 
+  summarise(
+    y = mean(value)
+  ) %>% 
+  ungroup()
+
+head(params_clean)
+
+# create a wide data.frame with one column for each PRL parameter
+params_wide <- params_clean %>%
+  pivot_wider(names_from = p, values_from = y)
+
+thedat <- thedat %>% 
+  dplyr::rename(subj_idx = NUMERO)
+
+dat <- full_join(params_wide, thedat, by = "subj_idx")
+
+dat$lesion <- factor(dat$LESIONE)
+
+hist(dat$alpha_neg)
+m1 <- lm(
+  alpha_neg ~ (Dass_DEP + Dass_ANX + Dass_STRESS) + 
+    SWLS + Panas_P + Panas_N + ADL + IADL +
+    lesion + ETA + SESSO + SCOLARITA + SDMT_CR,
+  data = dat
+)
+car::Anova(m1)
+summary(m1)
+
+hist(dat$alpha_pos)
+m2 <- lm(
+  alpha_pos ~ (Dass_DEP + Dass_ANX + Dass_STRESS) + 
+    SWLS + Panas_P + Panas_N + ADL + IADL +
+    lesion + ETA + SESSO + SCOLARITA + SDMT_CR,
+  data = dat
+)
+car::Anova(m2)
+summary(m2)
+
+hist(dat$v)
+m3 <- lm(
+  v ~ (Dass_DEP + Dass_ANX + Dass_STRESS) + 
+    SWLS + Panas_P + Panas_N + ADL + IADL +
+    lesion + ETA + SESSO + SCOLARITA + SDMT_CR,
+  data = dat
+)
+car::Anova(m3)
+
+hist(dat$t)
+m4 <- lm(
+  t ~ (Dass_DEP + Dass_ANX + Dass_STRESS) + 
+    SWLS + Panas_P + Panas_N + ADL + IADL +
+    lesion + ETA + SESSO + SCOLARITA + SDMT_CR,
+  data = dat
+)
+car::Anova(m4)
+
+
+hist(dat$z)
+m5 <- lm(
+  z ~ (Dass_DEP + Dass_ANX + Dass_STRESS) + 
+    SWLS + Panas_P + Panas_N + ADL + IADL +
+    lesion + ETA + SESSO + SCOLARITA + SDMT_CR,
+  data = dat
+)
+car::Anova(m5)
+
+
+
+
 
 thedat %>% 
   group_by(group, condition, time) %>% 
