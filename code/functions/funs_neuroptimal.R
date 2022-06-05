@@ -1,3 +1,99 @@
+
+save_rds_raw_prl_data <- function(DESTINATION_FOLDER) {
+  
+  dir <- here("data", "raw", "PRL", "matlab_prl", "data", DESTINATION_FOLDER)
+  file_names <- as.character(list.files(path=dir))
+  n_files <- length(file_names)
+  n_files
+  
+  d_list <- list()
+  
+  for (i in 1:n_files) {
+    
+    d  <- readMat(here("data", "raw", "PRL", "matlab_prl", "data", DESTINATION_FOLDER, file_names[i]))
+    
+    # subj_name <- as.character(d$data[, , 1]$subject.code)
+    subj_tag <- as.character(d$data[, , 1]$subTag)
+    
+    # The value of block has been recorded incorrectly!
+    # block <- as.numeric(d$data[, , 1]$block)
+    
+    # I assign to block the value of the index i (1:n_files)
+    # so as to have an increasing index. Then I will order the trials
+    # according to subj_idx, time, and block. Within each time point,
+    # the sequence of blocks is irrelevant. What is important is to 
+    # distinguish between the two block. The variable time has been recorded
+    # correctly.
+    block <- i
+    
+    is_food_reward_first <- 
+      as.numeric(d$data[, , 1]$is.food.rewarded.first)
+    # img_pair <- as.numeric(d$data[, , 1]$img.pair)
+    # date <- as.character(d$data[, , 1]$today)
+    total_reward <- as.numeric(d$data[, , 1]$totalReward)
+    outcome <- as.numeric(d$data[, , 1]$outcome)
+    choice <- as.numeric(d$data[, , 1]$choice)
+    rt <- as.numeric(d$data[, , 1]$RT)
+    fdb_prob <- as.numeric(d$data[, , 1]$img.pair[, , 1]$prob)
+    subj_id <- as.numeric(d$data[, , 1]$sID)
+    ntrials <- as.numeric(d$data[, , 1]$img.pair[, , 1]$nt)
+    trial <- 1:ntrials
+    task_version <- as.numeric(d$data[, , 1]$img.pair[, , 1]$taskVersion)
+    volatility <- as.character(d$data[, , 1]$img.pair[, , 1]$volatility)
+    
+    if (is_food_reward_first == 1) {
+      principled_corr_choices = c(rep(1, 40), rep(2, 40), rep(1, 40), rep(2, 40))
+    } else{
+      principled_corr_choices = c(rep(2, 40), rep(1, 40), rep(2, 40), rep(1, 40))
+    }
+    
+    is_correct_choice <- ifelse(
+      choice == principled_corr_choices, 0, 1
+    )
+    
+    # mean(is_correct_choice)
+    # total_reward / 160
+    
+    # add epoch vector for a block of 160 trials
+    epoch <- rep(1:4, each = 40)
+    
+    d_list[[i]] <- data.frame(
+      subj_id,
+      subj_tag,
+      volatility = "low",
+      trial,
+      ntrials,
+      block,
+      epoch,
+      is_food_reward_first,
+      total_reward,
+      outcome,
+      choice,
+      rt
+    )
+    
+    print(i)
+  }
+  
+  # convert list into data.frame
+  df <- do.call(rbind.data.frame, d_list)
+  
+  # the numbers should be the same
+  # length(unique(df$subj_id))
+  # length(unique(df$subj_tag))
+  
+  name_file <- paste0(DESTINATION_FOLDER, ".rds")
+  
+  # save data in RDS files
+  saveRDS(df, here("data", "processed", "PRL", name_file))
+}
+
+
+
+
+
+
+
 #' This function correcs the coding of 'block' and 'img_pair'
 #' in the raw data, before running the loop for estimating the 
 #' EWA and RP parameters for each subjec, and each block. 

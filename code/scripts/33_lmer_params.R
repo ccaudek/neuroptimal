@@ -15,11 +15,12 @@ alpha_pos_df <- d %>%
   dplyr::filter(param == "alpha") %>% 
   dplyr::select(param, mean, time, is_neuroptimal, sub_idx)
 
+length(unique(alpha_pos_df$sub_idx))
 
 hist(alpha_pos_df$mean)
 
 fm <- lmer(
-  mean ~ is_neuroptimal * time + (time | sub_idx),
+  mean ~ is_neuroptimal + time + (1 | sub_idx),
   data = alpha_pos_df
 )
 
